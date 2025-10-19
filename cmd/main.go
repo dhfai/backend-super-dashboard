@@ -43,6 +43,13 @@ func main() {
 	cleanupService := services.NewCleanupService(database.DB)
 	noteService := services.NewNoteService(database.DB)
 
+	// Financial Management Services
+	transactionService := services.NewTransactionService(database.DB)
+	dailyTargetService := services.NewDailyTargetService(database.DB, transactionService)
+	financialGoalService := services.NewFinancialGoalService(database.DB)
+	backtestStrategyService := services.NewBacktestStrategyService(database.DB)
+	budgetService := services.NewBudgetService(database.DB, transactionService)
+
 	// Run initial cleanup
 	cleanupService.RunCleanup()
 
@@ -59,6 +66,13 @@ func main() {
 	profileController := controllers.NewProfileController(database.DB)
 	noteController := controllers.NewNoteController(noteService)
 
+	// Financial Management Controllers
+	transactionController := controllers.NewTransactionController(transactionService)
+	dailyTargetController := controllers.NewDailyTargetController(dailyTargetService)
+	financialGoalController := controllers.NewFinancialGoalController(financialGoalService)
+	backtestStrategyController := controllers.NewBacktestStrategyController(backtestStrategyService)
+	budgetController := controllers.NewBudgetController(budgetService)
+
 	if cfg.App.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
@@ -71,7 +85,9 @@ func main() {
 
 	routes.SetupMiddleware(router)
 
-	routes.SetupRoutes(router, authController, profileController, noteController, authService, database.DB)
+	routes.SetupRoutes(router, authController, profileController, noteController,
+		transactionController, dailyTargetController, financialGoalController,
+		backtestStrategyController, budgetController, authService, database.DB)
 
 	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 

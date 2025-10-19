@@ -14,6 +14,11 @@ func SetupRoutes(
 	authController *controllers.AuthController,
 	profileController *controllers.ProfileController,
 	noteController *controllers.NoteController,
+	transactionController *controllers.TransactionController,
+	dailyTargetController *controllers.DailyTargetController,
+	financialGoalController *controllers.FinancialGoalController,
+	backtestStrategyController *controllers.BacktestStrategyController,
+	budgetController *controllers.BudgetController,
 	authService *services.AuthService,
 	db *gorm.DB,
 ) {
@@ -85,6 +90,78 @@ func SetupRoutes(
 				notes.PATCH("/:id/favorite", noteController.ToggleFavorite)
 				// Hard delete
 				notes.DELETE("/:id/hard-delete", noteController.HardDeleteNote)
+			}
+
+			// Financial Management endpoints
+			finance := protected.Group("/finance")
+			{
+				// Transaction endpoints
+				transactions := finance.Group("/transactions")
+				{
+					transactions.POST("", transactionController.CreateTransaction)
+					transactions.GET("", transactionController.GetAllTransactions)
+					transactions.GET("/summary", transactionController.GetTransactionSummary)
+					transactions.GET("/breakdown", transactionController.GetCategoryBreakdown)
+					transactions.GET("/trend", transactionController.GetMonthlyTrend)
+					transactions.GET("/category/:category", transactionController.GetTransactionsByCategory)
+					transactions.GET("/:id", transactionController.GetTransactionByID)
+					transactions.PUT("/:id", transactionController.UpdateTransaction)
+					transactions.DELETE("/:id", transactionController.DeleteTransaction)
+				}
+
+				// Daily Target endpoints
+				targets := finance.Group("/daily-targets")
+				{
+					targets.POST("", dailyTargetController.CreateDailyTarget)
+					targets.GET("", dailyTargetController.GetAllDailyTargets)
+					targets.GET("/today", dailyTargetController.GetTodayTarget)
+					targets.GET("/month-summary", dailyTargetController.GetCurrentMonthSummary)
+					targets.GET("/week-summary", dailyTargetController.GetWeekSummary)
+					targets.GET("/:id", dailyTargetController.GetDailyTargetByID)
+					targets.PUT("/:id", dailyTargetController.UpdateDailyTarget)
+					targets.POST("/:id/refresh", dailyTargetController.RefreshActualValues)
+					targets.DELETE("/:id", dailyTargetController.DeleteDailyTarget)
+				}
+
+				// Financial Goal endpoints
+				goals := finance.Group("/goals")
+				{
+					goals.POST("", financialGoalController.CreateFinancialGoal)
+					goals.GET("", financialGoalController.GetAllFinancialGoals)
+					goals.GET("/summary", financialGoalController.GetGoalsSummary)
+					goals.GET("/:id", financialGoalController.GetFinancialGoalByID)
+					goals.PUT("/:id", financialGoalController.UpdateFinancialGoal)
+					goals.POST("/:id/update-progress", financialGoalController.UpdateGoalProgress)
+					goals.POST("/:id/add-progress", financialGoalController.AddToGoalProgress)
+					goals.DELETE("/:id", financialGoalController.DeleteFinancialGoal)
+				}
+
+				// Backtest Strategy endpoints
+				strategies := finance.Group("/backtest-strategies")
+				{
+					strategies.POST("", backtestStrategyController.CreateBacktestStrategy)
+					strategies.GET("", backtestStrategyController.GetAllBacktestStrategies)
+					strategies.GET("/:id", backtestStrategyController.GetBacktestStrategyByID)
+					strategies.GET("/:id/result", backtestStrategyController.GetBacktestResult)
+					strategies.PUT("/:id", backtestStrategyController.UpdateBacktestStrategy)
+					strategies.POST("/:id/run", backtestStrategyController.RunBacktest)
+					strategies.POST("/:id/activate", backtestStrategyController.ActivateStrategy)
+					strategies.POST("/:id/complete", backtestStrategyController.CompleteStrategy)
+					strategies.DELETE("/:id", backtestStrategyController.DeleteBacktestStrategy)
+				}
+
+				// Budget endpoints
+				budgets := finance.Group("/budgets")
+				{
+					budgets.POST("", budgetController.CreateBudget)
+					budgets.GET("", budgetController.GetAllBudgets)
+					budgets.GET("/summary", budgetController.GetBudgetSummary)
+					budgets.GET("/monthly-report", budgetController.GetMonthlyBudgetReport)
+					budgets.GET("/alerts", budgetController.CheckBudgetAlert)
+					budgets.GET("/:id", budgetController.GetBudgetByID)
+					budgets.PUT("/:id", budgetController.UpdateBudget)
+					budgets.DELETE("/:id", budgetController.DeleteBudget)
+				}
 			}
 		}
 	}
