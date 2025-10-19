@@ -1,0 +1,738 @@
+openapi: 3.0.3
+info:
+  title: Go Backend API
+  description: |
+    API ini menyediakan layanan autentikasi dan manajemen profil pengguna dengan fitur keamanan lengkap termasuk verifikasi email, reset password, dan penghapusan akun.
+
+    ## Authentication
+    API ini menggunakan JWT (JSON Web Token) untuk autentikasi. Token harus disertakan dalam header `Authorization` dengan format `Bearer <token>`.
+
+    ## Security Features
+    - JWT Authentication
+    - Password Hashing dengan bcrypt
+    - Email Verification dengan OTP 6 digit
+    - Rate Limiting
+    - CORS Protection
+    - Input Validation
+    - Security Headers
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    APIResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful
+        message:
+          type: string
+          description: Human readable message
+        data:
+          type: object
+          description: Response data (optional)
+        error:
+          oneOf:
+            - type: string
+            - type: object
+            - type: array
+          description: Error details (optional)
+      required:
+        - success
+        - message
+
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Username for the account
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          description: Valid email address
+          example: "john@example.com"
+        password:
+          type: string
+          minLength: 8
+          description: Password (minimum 8 characters)
+          example: "SecurePass123!"
+        retype_password:
+          type: string
+          description: Password confirmation (must match password)
+          example: "SecurePass123!"
+      required:
+        - username
+        - email
+        - password
+        - retype_password
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: "john@example.com"
+        password:
+          type: string
+          description: User password
+          example: "SecurePass123!"
+      required:
+        - email
+        - password
+
+    VerifyEmailRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address to verify
+          example: "john@example.com"
+        otp_code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: 6-digit OTP code
+          example: "123456"
+      required:
+        - email
+        - otp_code
+
+    ResendVerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for resending verification
+          example: "john@example.com"
+      required:
+        - email
+
+    ForgetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for password reset
+          example: "john@example.com"
+      required:
+        - email
+
+    ResetPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address
+          example: "john@example.com"
+        otp_code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: 6-digit OTP code from email
+          example: "123456"
+        new_password:
+          type: string
+          minLength: 8
+          description: New password (minimum 8 characters)
+          example: "NewSecurePass123!"
+      required:
+        - email
+        - otp_code
+        - new_password
+
+    RequestDeleteAccountRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          description: Current password for verification
+          example: "SecurePass123!"
+      required:
+        - password
+
+    DeleteAccountRequest:
+      type: object
+      properties:
+        otp_code:
+          type: string
+          minLength: 6
+          maxLength: 6
+          description: 6-digit OTP code from email
+          example: "123456"
+      required:
+        - otp_code
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          maxLength: 100
+          description: Full name of the user
+          example: "John Doe"
+        address:
+          type: string
+          description: User address
+          example: "123 Main Street, Anytown, USA"
+        phone_number:
+          type: string
+          maxLength: 20
+          description: Phone number
+          example: "+1234567890"
+        country:
+          type: string
+          maxLength: 50
+          description: Country name
+          example: "United States"
+
+    Profile:
+      type: object
+      properties:
+        full_name:
+          type: string
+          description: Full name
+          example: "John Doe"
+        address:
+          type: string
+          description: Address
+          example: "123 Main Street"
+        phone_number:
+          type: string
+          description: Phone number
+          example: "+1234567890"
+        country:
+          type: string
+          description: Country
+          example: "USA"
+        created_at:
+          type: string
+          format: date-time
+          description: Profile creation timestamp
+        updated_at:
+          type: string
+          format: date-time
+          description: Profile last update timestamp
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User unique identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        username:
+          type: string
+          description: Username
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          description: Email address
+          example: "john@example.com"
+        is_active:
+          type: boolean
+          description: Account active status
+          example: true
+        email_verified:
+          type: boolean
+          description: Email verification status
+          example: true
+        email_verified_at:
+          type: string
+          format: date-time
+          description: Email verification timestamp
+          nullable: true
+        profile:
+          $ref: '#/components/schemas/Profile'
+          nullable: true
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT authentication token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          $ref: '#/components/schemas/UserResponse'
+      required:
+        - token
+        - user
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Field name that failed validation
+          example: "email"
+        message:
+          type: string
+          description: Validation error message
+          example: "Email is required"
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "ok"
+        service:
+          type: string
+          example: "file-store-api"
+        version:
+          type: string
+          example: "1.0.0"
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+          example:
+            success: false
+            message: "Validation failed"
+            error:
+              - field: "email"
+                message: "Email is required"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+          example:
+            success: false
+            message: "Unauthorized"
+            error: "Invalid or missing token"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+          example:
+            success: false
+            message: "Resource not found"
+            error: "User not found"
+
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+          example:
+            success: false
+            message: "User with this email or username already exists"
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/APIResponse'
+          example:
+            success: false
+            message: "Internal server error"
+            error: "Something went wrong"
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health Check
+      summary: Check API health status
+      description: Returns the current health status of the API
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/v1/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account with email verification
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/verify-email:
+    post:
+      tags:
+        - Authentication
+      summary: Verify email address
+      description: Verify user email with OTP code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/resend-verification:
+    post:
+      tags:
+        - Authentication
+      summary: Resend verification code
+      description: Send a new verification code to user email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendVerificationRequest'
+      responses:
+        '200':
+          description: Verification code sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/forget-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request password reset
+      description: Send password reset code to user email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset code sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Reset password
+      description: Reset user password with OTP code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout user and invalidate token
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/request-delete-account:
+    post:
+      tags:
+        - Authentication
+      summary: Request account deletion
+      description: Send account deletion code to user email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestDeleteAccountRequest'
+      responses:
+        '200':
+          description: Account deletion code sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/auth/delete-account:
+    post:
+      tags:
+        - Authentication
+      summary: Delete user account
+      description: Delete user account with OTP code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+      responses:
+        '200':
+          description: Account deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/profile:
+    get:
+      tags:
+        - Profile Management
+      summary: Get user profile
+      description: Retrieve current user profile information
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Profile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - Profile Management
+      summary: Update user profile
+      description: Update current user profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Profile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Profile Management
+      summary: Delete user profile
+      description: Delete current user profile information
+      responses:
+        '200':
+          description: Profile deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/user/info:
+    get:
+      tags:
+        - User Management
+      summary: Get user information
+      description: Retrieve complete user information including profile
+      responses:
+        '200':
+          description: User info retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+tags:
+  - name: Health Check
+    description: API health monitoring
+  - name: Authentication
+    description: User authentication and account management
+  - name: Profile Management
+    description: User profile operations
+  - name: User Management
+    description: User information operations

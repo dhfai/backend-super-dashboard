@@ -1,0 +1,69 @@
+# Email Verification API Tests
+# VS Code REST Client extension required
+
+### Health Check
+GET http://localhost:8080/health
+
+### 1. Register New User (Requires Email Verification)
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123",
+  "retype_password": "password123"
+}
+
+### 2. Try to Login with Unverified Email (Should Fail)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 3. Verify Email with Code
+POST http://localhost:8080/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "code": "123456"
+}
+
+### 4. Login After Email Verification (Should Success)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 5. Resend Verification Code
+POST http://localhost:8080/api/v1/auth/resend-verification
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+### 6. Verify Email with Wrong Code (Should Fail)
+POST http://localhost:8080/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "code": "999999"
+}
+
+### 7. Verify Email with Expired Code (Wait 10 minutes)
+POST http://localhost:8080/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "code": "123456"
+}

@@ -1,0 +1,89 @@
+# Delete Account Testing Script
+# Test untuk memastikan data benar-benar terhapus dari database
+
+### 1. Register New User for Delete Test
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "deletetest",
+  "email": "deletetest@example.com",
+  "password": "password123",
+  "retype_password": "password123"
+}
+
+### 2. Verify Email
+POST http://localhost:8080/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "deletetest@example.com",
+  "code": "123456"
+}
+
+### 3. Login User
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "deletetest@example.com",
+  "password": "password123"
+}
+
+### 4. Update Profile (Create Profile Data)
+PUT http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "full_name": "Delete Test User",
+  "address": "123 Test Street",
+  "phone_number": "+1234567890",
+  "country": "Test Country"
+}
+
+### 5. Get Profile (Verify Profile Exists)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 6. Request Delete Account
+POST http://localhost:8080/api/v1/auth/request-delete-account
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "password": "password123"
+}
+
+### 7. Delete Account (Final Step)
+POST http://localhost:8080/api/v1/auth/delete-account
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "code": "123456"
+}
+
+### 8. Try to Login After Deletion (Should Fail)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "deletetest@example.com",
+  "password": "password123"
+}
+
+### 9. Try to Access Profile (Should Fail)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 10. Register Same Email Again (Should Work - Email Available)
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "deletetest2",
+  "email": "deletetest@example.com",
+  "password": "newpassword123",
+  "retype_password": "newpassword123"
+}

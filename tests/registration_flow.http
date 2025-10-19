@@ -1,0 +1,160 @@
+### Registration Flow - Complete Example
+### File ini berisi contoh lengkap alur registrasi baru dengan OTP verification
+
+### Variables
+@baseUrl = http://localhost:8080/api/v1
+@email = test@example.com
+@username = testuser
+@password = SecurePass123!
+@otp_code = 123456
+
+###############################################
+# STEP 1: REGISTER - Initiate Registration
+###############################################
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "retype_password": "{{password}}"
+}
+
+### Expected Response (201):
+# {
+#   "success": true,
+#   "message": "Registration initiated successfully. Please check your email for verification code to complete registration.",
+#   "data": {
+#     "email": "test@example.com",
+#     "expires_in": "24 hours"
+#   }
+# }
+
+###############################################
+# STEP 2: CHECK EMAIL for OTP Code
+# OTP berlaku 15 menit
+###############################################
+
+###############################################
+# STEP 3: VERIFY REGISTRATION - Complete Registration
+###############################################
+
+POST {{baseUrl}}/auth/verify-registration
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "otp_code": "{{otp_code}}"
+}
+
+### Expected Response (200):
+# {
+#   "success": true,
+#   "message": "Registration completed successfully. You can now login.",
+#   "data": {
+#     "id": "uuid",
+#     "username": "testuser",
+#     "email": "test@example.com",
+#     "is_active": true,
+#     "email_verified": true,
+#     "email_verified_at": "2025-10-14T22:00:00Z",
+#     "profile": { ... }
+#   }
+# }
+
+###############################################
+# STEP 4: LOGIN - After Registration Complete
+###############################################
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Expected Response (200):
+# {
+#   "success": true,
+#   "message": "Login successful",
+#   "data": {
+#     "token": "jwt_token_here",
+#     "user": { ... }
+#   }
+# }
+
+###############################################
+# OPTIONAL: RESEND OTP - If OTP not received or expired
+###############################################
+
+POST {{baseUrl}}/auth/resend-registration-otp
+Content-Type: application/json
+
+{
+  "email": "{{email}}"
+}
+
+### Expected Response (200):
+# {
+#   "success": true,
+#   "message": "New verification code sent to your email."
+# }
+
+###############################################
+# ERROR CASES
+###############################################
+
+### Test: Register with existing email (should fail after completing registration)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "retype_password": "{{password}}"
+}
+
+### Expected: 409 Conflict
+
+###
+
+### Test: Verify with invalid OTP
+POST {{baseUrl}}/auth/verify-registration
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "otp_code": "000000"
+}
+
+### Expected: 400 Bad Request - Invalid or expired OTP code
+
+###
+
+### Test: Verify registration that doesn't exist
+POST {{baseUrl}}/auth/verify-registration
+Content-Type: application/json
+
+{
+  "email": "notexist@example.com",
+  "otp_code": "123456"
+}
+
+### Expected: 404 Not Found - Registration not found or expired
+
+###
+
+### Test: Login before completing registration (should fail)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "password123"
+}
+
+### Expected: 401 Unauthorized - Invalid email or password

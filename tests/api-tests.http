@@ -1,0 +1,111 @@
+### File Store API Test Collection
+
+# Health Check
+GET http://localhost:8080/health
+
+###
+
+# Register User
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "SecurePass123!",
+    "retype_password": "SecurePass123!"
+}
+
+###
+
+# Login User
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "SecurePass123!"
+}
+
+###
+
+# Get Profile (Replace YOUR_JWT_TOKEN with actual token from login response)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_JWT_TOKEN
+
+###
+
+# Update Profile (Replace YOUR_JWT_TOKEN with actual token from login response)
+PUT http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+    "full_name": "John Doe",
+    "address": "123 Main Street, Anytown, USA",
+    "phone_number": "+1234567890",
+    "country": "United States"
+}
+
+###
+
+# Get User Info (Replace YOUR_JWT_TOKEN with actual token from login response)
+GET http://localhost:8080/api/v1/user/info
+Authorization: Bearer YOUR_JWT_TOKEN
+
+###
+
+# Forget Password
+POST http://localhost:8080/api/v1/auth/forget-password
+Content-Type: application/json
+
+{
+    "email": "john@example.com"
+}
+
+###
+
+# Reset Password (Replace with actual OTP code from email)
+POST http://localhost:8080/api/v1/auth/reset-password
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "otp_code": "123456",
+    "new_password": "NewSecurePass123!"
+}
+
+###
+
+# Test Invalid Login
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "email": "john@example.com",
+    "password": "wrong_password"
+}
+
+###
+
+# Test Registration with Existing Email
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+    "username": "anothername",
+    "email": "john@example.com",
+    "password": "AnotherPass123!",
+    "retype_password": "AnotherPass123!"
+}
+
+###
+
+# Test Unauthorized Access to Protected Route
+GET http://localhost:8080/api/v1/profile
+
+###
+
+# Test Invalid Token
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer invalid_token_here

@@ -1,0 +1,151 @@
+# Logout and Delete Account API Tests
+# VS Code REST Client extension required
+
+### Health Check
+GET http://localhost:8080/health
+
+### 1. Register New User
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "testlogout",
+  "email": "testlogout@example.com",
+  "password": "password123",
+  "retype_password": "password123"
+}
+
+### 2. Verify Email
+POST http://localhost:8080/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "testlogout@example.com",
+  "code": "123456"
+}
+
+### 3. Login User
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "testlogout@example.com",
+  "password": "password123"
+}
+
+### 4. Get User Profile (Test Token Works)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 5. Request Delete Account (Send OTP)
+POST http://localhost:8080/api/v1/auth/request-delete-account
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "password": "password123"
+}
+
+### 6. Try to Access Profile After Delete Request (Should Still Work)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 7. Delete Account with OTP
+POST http://localhost:8080/api/v1/auth/delete-account
+Content-Type: application/json
+Authorization: Bearer YOUR_TOKEN_HERE
+
+{
+  "code": "123456"
+}
+
+### 8. Try to Access Profile After Account Deletion (Should Fail)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### =============================================
+### LOGOUT TESTING (New User)
+### =============================================
+
+### 9. Register New User for Logout Test
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "logouttest",
+  "email": "logouttest@example.com",
+  "password": "password123",
+  "retype_password": "password123"
+}
+
+### 10. Verify Email for Logout Test
+POST http://localhost:8080/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "email": "logouttest@example.com",
+  "code": "123456"
+}
+
+### 11. Login User for Logout Test
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "logouttest@example.com",
+  "password": "password123"
+}
+
+### 12. Get User Profile Before Logout (Should Work)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 13. Logout User
+POST http://localhost:8080/api/v1/auth/logout
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 14. Try to Access Profile After Logout (Should Fail)
+GET http://localhost:8080/api/v1/profile
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 15. Try to Login Again (Should Work - Account Still Exists)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "logouttest@example.com",
+  "password": "password123"
+}
+
+### =============================================
+### ERROR TESTING
+### =============================================
+
+### 16. Try to Delete Account with Wrong OTP
+POST http://localhost:8080/api/v1/auth/delete-account
+Content-Type: application/json
+Authorization: Bearer NEW_TOKEN_FROM_STEP_15
+
+{
+  "code": "999999"
+}
+
+### 17. Try to Request Delete Account with Wrong Password
+POST http://localhost:8080/api/v1/auth/request-delete-account
+Content-Type: application/json
+Authorization: Bearer NEW_TOKEN_FROM_STEP_15
+
+{
+  "password": "wrongpassword"
+}
+
+### 18. Try to Logout without Token
+POST http://localhost:8080/api/v1/auth/logout
+
+### 19. Try to Delete Account without Token
+POST http://localhost:8080/api/v1/auth/delete-account
+Content-Type: application/json
+
+{
+  "code": "123456"
+}

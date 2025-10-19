@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: filestore_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: filestore_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - filestore_network
+
+  # File Store API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: filestore_api
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: filestore_db
+      DB_SSLMODE: disable
+      JWT_SECRET: your-super-secret-jwt-key-here
+      SERVER_PORT: 8080
+      SERVER_HOST: 0.0.0.0
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_USERNAME: your-email@gmail.com
+      SMTP_PASSWORD: your-app-password
+      ENV: production
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - filestore_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Adminer (Database Admin Interface) - Optional
+  adminer:
+    image: adminer:latest
+    container_name: filestore_adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+    networks:
+      - filestore_network
+
+volumes:
+  postgres_data:
+
+networks:
+  filestore_network:
+    driver: bridge
