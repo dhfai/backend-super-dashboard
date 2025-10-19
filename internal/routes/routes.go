@@ -13,6 +13,7 @@ func SetupRoutes(
 	router *gin.Engine,
 	authController *controllers.AuthController,
 	profileController *controllers.ProfileController,
+	noteController *controllers.NoteController,
 	authService *services.AuthService,
 	db *gorm.DB,
 ) {
@@ -59,6 +60,31 @@ func SetupRoutes(
 			user := protected.Group("/user")
 			{
 				user.GET("/info", profileController.GetUserInfo)
+			}
+
+			// Notes endpoints
+			notes := protected.Group("/notes")
+			{
+				// Get favorite notes (must be before /:id to avoid route conflict)
+				notes.GET("/favorites", noteController.GetFavoriteNotes)
+				// Search notes
+				notes.GET("/search", noteController.SearchNotes)
+				// Get notes by tag
+				notes.GET("/tags", noteController.GetNotesByTag)
+				// Get notes count
+				notes.GET("/count", noteController.GetNotesCount)
+
+				// Basic CRUD operations
+				notes.POST("", noteController.CreateNote)
+				notes.GET("", noteController.GetAllNotes)
+				notes.GET("/:id", noteController.GetNote)
+				notes.PUT("/:id", noteController.UpdateNote)
+				notes.DELETE("/:id", noteController.DeleteNote)
+
+				// Toggle favorite status
+				notes.PATCH("/:id/favorite", noteController.ToggleFavorite)
+				// Hard delete
+				notes.DELETE("/:id/hard-delete", noteController.HardDeleteNote)
 			}
 		}
 	}
