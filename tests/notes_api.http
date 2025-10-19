@@ -1,0 +1,357 @@
+### Notes API Tests
+### Base URL
+@baseUrl = http://localhost:8080/api/v1
+@authToken = YOUR_JWT_TOKEN_HERE
+
+### Health Check
+GET {{baseUrl}}/../health
+
+###############################################
+### 1. CREATE NOTE
+###############################################
+
+### Create a basic note
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "My First Daily Note",
+  "content": "This is the content of my first note. I learned something new today!",
+  "tags": "learning,personal",
+  "is_favorite": false
+}
+
+### Create a work note
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Project Meeting Notes - Q1 2024",
+  "content": "Discussed the new feature requirements. Team decided to use microservices architecture. Sprint planning scheduled for next week.",
+  "tags": "work,meeting,project",
+  "is_favorite": true
+}
+
+### Create a note with empty tags
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Simple Note",
+  "content": "Just a simple note without tags",
+  "tags": "",
+  "is_favorite": false
+}
+
+### Create favorite note
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Important Reminder",
+  "content": "Remember to review the code before deployment",
+  "tags": "important,reminder,work",
+  "is_favorite": true
+}
+
+###############################################
+### 2. GET ALL NOTES
+###############################################
+
+### Get all notes (default pagination)
+GET {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+
+### Get all notes with pagination
+GET {{baseUrl}}/notes?page=1&page_size=10
+Authorization: Bearer {{authToken}}
+
+### Get all notes sorted by title ascending
+GET {{baseUrl}}/notes?sort_by=title&sort_order=asc
+Authorization: Bearer {{authToken}}
+
+### Get all notes sorted by updated date descending
+GET {{baseUrl}}/notes?sort_by=updated_at&sort_order=desc
+Authorization: Bearer {{authToken}}
+
+### Search notes by keyword
+GET {{baseUrl}}/notes?search=meeting
+Authorization: Bearer {{authToken}}
+
+### Filter notes by tags
+GET {{baseUrl}}/notes?tags=work,project
+Authorization: Bearer {{authToken}}
+
+### Filter favorite notes
+GET {{baseUrl}}/notes?is_favorite=true
+Authorization: Bearer {{authToken}}
+
+### Complex filter: search + tags + favorite + pagination
+GET {{baseUrl}}/notes?search=project&tags=work&is_favorite=true&page=1&page_size=20&sort_by=created_at&sort_order=desc
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 3. GET SINGLE NOTE
+###############################################
+
+### Get note by ID (replace 1 with actual note ID)
+GET {{baseUrl}}/notes/1
+Authorization: Bearer {{authToken}}
+
+### Get note by ID (example with ID 5)
+GET {{baseUrl}}/notes/5
+Authorization: Bearer {{authToken}}
+
+### Get non-existent note (should return 404)
+GET {{baseUrl}}/notes/99999
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 4. UPDATE NOTE
+###############################################
+
+### Update note title and content (replace 1 with actual note ID)
+PUT {{baseUrl}}/notes/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Note Title",
+  "content": "This is the updated content of the note"
+}
+
+### Update only tags
+PUT {{baseUrl}}/notes/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "tags": "updated,modified,new-tags"
+}
+
+### Update favorite status
+PUT {{baseUrl}}/notes/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "is_favorite": true
+}
+
+### Update all fields
+PUT {{baseUrl}}/notes/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Completely Updated Note",
+  "content": "All fields have been updated in this note",
+  "tags": "updated,complete,all-fields",
+  "is_favorite": true
+}
+
+###############################################
+### 5. TOGGLE FAVORITE
+###############################################
+
+### Toggle favorite status (replace 1 with actual note ID)
+PATCH {{baseUrl}}/notes/1/favorite
+Authorization: Bearer {{authToken}}
+
+### Toggle favorite status for another note
+PATCH {{baseUrl}}/notes/2/favorite
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 6. GET FAVORITE NOTES
+###############################################
+
+### Get all favorite notes
+GET {{baseUrl}}/notes/favorites
+Authorization: Bearer {{authToken}}
+
+### Get favorite notes with pagination
+GET {{baseUrl}}/notes/favorites?page=1&page_size=5
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 7. SEARCH NOTES
+###############################################
+
+### Search notes by keyword "meeting"
+GET {{baseUrl}}/notes/search?q=meeting
+Authorization: Bearer {{authToken}}
+
+### Search notes by keyword "project" with pagination
+GET {{baseUrl}}/notes/search?q=project&page=1&page_size=20
+Authorization: Bearer {{authToken}}
+
+### Search notes by keyword in content
+GET {{baseUrl}}/notes/search?q=important
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 8. GET NOTES BY TAG
+###############################################
+
+### Get notes with "work" tag
+GET {{baseUrl}}/notes/tags?tags=work
+Authorization: Bearer {{authToken}}
+
+### Get notes with multiple tags
+GET {{baseUrl}}/notes/tags?tags=work,meeting
+Authorization: Bearer {{authToken}}
+
+### Get notes by tag with pagination
+GET {{baseUrl}}/notes/tags?tags=project&page=1&page_size=10
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 9. GET NOTES COUNT
+###############################################
+
+### Get total notes count
+GET {{baseUrl}}/notes/count
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 10. DELETE NOTE (SOFT DELETE)
+###############################################
+
+### Soft delete note (replace 1 with actual note ID)
+DELETE {{baseUrl}}/notes/1
+Authorization: Bearer {{authToken}}
+
+### Soft delete another note
+DELETE {{baseUrl}}/notes/2
+Authorization: Bearer {{authToken}}
+
+###############################################
+### 11. HARD DELETE NOTE (PERMANENT)
+###############################################
+
+### Hard delete note permanently (replace 1 with actual note ID)
+### WARNING: This action cannot be undone!
+DELETE {{baseUrl}}/notes/1/hard-delete
+Authorization: Bearer {{authToken}}
+
+### Hard delete another note permanently
+### WARNING: This action cannot be undone!
+DELETE {{baseUrl}}/notes/3/hard-delete
+Authorization: Bearer {{authToken}}
+
+###############################################
+### ERROR CASES (for testing validation)
+###############################################
+
+### Create note without title (should fail)
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "content": "Note without title",
+  "tags": "test"
+}
+
+### Create note without content (should fail)
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Note without content",
+  "tags": "test"
+}
+
+### Create note with title too long (should fail)
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "This is a very long title that exceeds 255 characters limit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "content": "Test content"
+}
+
+### Create note with tags too long (should fail)
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Note with too many tags",
+  "content": "Test content",
+  "tags": "tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8,tag9,tag10,tag11,tag12,tag13,tag14,tag15,tag16,tag17,tag18,tag19,tag20,tag21,tag22,tag23,tag24,tag25,tag26,tag27,tag28,tag29,tag30,tag31,tag32,tag33,tag34,tag35,tag36,tag37,tag38,tag39,tag40,tag41,tag42,tag43,tag44,tag45,tag46,tag47,tag48,tag49,tag50,tag51,tag52,tag53,tag54,tag55,tag56,tag57,tag58,tag59,tag60,tag61,tag62,tag63,tag64,tag65,tag66,tag67,tag68,tag69,tag70"
+}
+
+### Get note without authentication (should fail)
+GET {{baseUrl}}/notes/1
+
+### Search without keyword (should fail)
+GET {{baseUrl}}/notes/search
+Authorization: Bearer {{authToken}}
+
+### Get notes by tag without tags parameter (should fail)
+GET {{baseUrl}}/notes/tags
+Authorization: Bearer {{authToken}}
+
+###############################################
+### INTEGRATION TEST FLOW
+###############################################
+
+### Step 1: Create a new note
+# @name createNote
+POST {{baseUrl}}/notes
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Integration Test Note",
+  "content": "This note will be used for integration testing",
+  "tags": "test,integration",
+  "is_favorite": false
+}
+
+### Step 2: Get the created note (use ID from step 1)
+# @name getNote
+GET {{baseUrl}}/notes/{{createNote.response.body.data.id}}
+Authorization: Bearer {{authToken}}
+
+### Step 3: Update the note
+# @name updateNote
+PUT {{baseUrl}}/notes/{{createNote.response.body.data.id}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Updated Integration Test Note",
+  "content": "This note has been updated during integration testing",
+  "tags": "test,integration,updated",
+  "is_favorite": true
+}
+
+### Step 4: Toggle favorite
+# @name toggleFavorite
+PATCH {{baseUrl}}/notes/{{createNote.response.body.data.id}}/favorite
+Authorization: Bearer {{authToken}}
+
+### Step 5: Search for the note
+GET {{baseUrl}}/notes/search?q=integration
+Authorization: Bearer {{authToken}}
+
+### Step 6: Get notes by tag
+GET {{baseUrl}}/notes/tags?tags=integration
+Authorization: Bearer {{authToken}}
+
+### Step 7: Soft delete the note
+DELETE {{baseUrl}}/notes/{{createNote.response.body.data.id}}
+Authorization: Bearer {{authToken}}
+
+### Step 8: Try to get the deleted note (should fail)
+GET {{baseUrl}}/notes/{{createNote.response.body.data.id}}
+Authorization: Bearer {{authToken}}

@@ -91,3 +91,60 @@ func (u *User) ToUserResponse() *UserResponse {
 		Profile:         u.Profile,
 	}
 }
+
+// Note DTOs
+type CreateNoteRequest struct {
+	Title      string `json:"title" validate:"required,min=1,max=255"`
+	Content    string `json:"content" validate:"required,min=1"`
+	Tags       string `json:"tags" validate:"max=500"`
+	IsFavorite bool   `json:"is_favorite"`
+}
+
+type UpdateNoteRequest struct {
+	Title      string `json:"title" validate:"omitempty,min=1,max=255"`
+	Content    string `json:"content" validate:"omitempty,min=1"`
+	Tags       string `json:"tags" validate:"max=500"`
+	IsFavorite *bool  `json:"is_favorite"`
+}
+
+type NoteResponse struct {
+	ID         uint      `json:"id"`
+	UserID     string    `json:"user_id"`
+	Title      string    `json:"title"`
+	Content    string    `json:"content"`
+	Tags       string    `json:"tags"`
+	IsFavorite bool      `json:"is_favorite"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+type NotesListResponse struct {
+	Notes      []NoteResponse `json:"notes"`
+	Total      int64          `json:"total"`
+	Page       int            `json:"page"`
+	PageSize   int            `json:"page_size"`
+	TotalPages int            `json:"total_pages"`
+}
+
+type NoteFilterRequest struct {
+	Search     string `json:"search" form:"search"`
+	Tags       string `json:"tags" form:"tags"`
+	IsFavorite *bool  `json:"is_favorite" form:"is_favorite"`
+	Page       int    `json:"page" form:"page"`
+	PageSize   int    `json:"page_size" form:"page_size"`
+	SortBy     string `json:"sort_by" form:"sort_by"`       // created_at, updated_at, title
+	SortOrder  string `json:"sort_order" form:"sort_order"` // asc, desc
+}
+
+func (n *Note) ToNoteResponse() *NoteResponse {
+	return &NoteResponse{
+		ID:         n.ID,
+		UserID:     n.UserID.String(),
+		Title:      n.Title,
+		Content:    n.Content,
+		Tags:       n.Tags,
+		IsFavorite: n.IsFavorite,
+		CreatedAt:  n.CreatedAt,
+		UpdatedAt:  n.UpdatedAt,
+	}
+}

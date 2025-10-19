@@ -41,6 +41,7 @@ func main() {
 	authService := services.NewAuthService(cfg.JWT.Secret)
 	emailService := services.NewEmailService(&cfg.Email)
 	cleanupService := services.NewCleanupService(database.DB)
+	noteService := services.NewNoteService(database.DB)
 
 	// Run initial cleanup
 	cleanupService.RunCleanup()
@@ -56,6 +57,7 @@ func main() {
 
 	authController := controllers.NewAuthController(database.DB, authService, emailService)
 	profileController := controllers.NewProfileController(database.DB)
+	noteController := controllers.NewNoteController(noteService)
 
 	if cfg.App.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -69,7 +71,7 @@ func main() {
 
 	routes.SetupMiddleware(router)
 
-	routes.SetupRoutes(router, authController, profileController, authService, database.DB)
+	routes.SetupRoutes(router, authController, profileController, noteController, authService, database.DB)
 
 	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
 

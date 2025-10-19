@@ -1,5 +1,133 @@
 # CHANGELOG - API Updates
 
+## [2.1.0] - 2025-10-19
+
+### 🎉 New Feature - Daily Notes API
+
+#### Added
+- **Complete Notes/Journal Management System**
+  - Full CRUD operations for daily notes
+  - Search and filtering capabilities
+  - Tags system for organization
+  - Favorites functionality
+  - Pagination and sorting support
+
+#### New Endpoints (11 Total)
+1. **POST `/api/v1/notes`** - Create Note ⭐
+   - Create new daily note with title, content, tags
+   - Support for favorite marking
+   - Response: `201 Created` with note data
+
+2. **GET `/api/v1/notes`** - Get All Notes
+   - Retrieve all user's notes
+   - Advanced filtering: search, tags, favorite status
+   - Pagination support (page, page_size)
+   - Sorting: by created_at, updated_at, or title (asc/desc)
+   - Response: `200 OK` with paginated notes list
+
+3. **GET `/api/v1/notes/:id`** - Get Single Note
+   - Retrieve specific note by ID
+   - Response: `200 OK` with note data
+
+4. **PUT `/api/v1/notes/:id`** - Update Note
+   - Update title, content, tags, or favorite status
+   - Partial updates supported
+   - Response: `200 OK` with updated note
+
+5. **DELETE `/api/v1/notes/:id`** - Soft Delete Note
+   - Soft delete (can be recovered)
+   - Response: `200 OK`
+
+6. **DELETE `/api/v1/notes/:id/hard-delete`** - Hard Delete Note ⚠️
+   - Permanent deletion (cannot be undone)
+   - Response: `200 OK`
+
+7. **PATCH `/api/v1/notes/:id/favorite`** - Toggle Favorite
+   - Toggle favorite status on/off
+   - Response: `200 OK` with updated note
+
+8. **GET `/api/v1/notes/favorites`** - Get Favorite Notes
+   - Retrieve all favorite notes
+   - Pagination support
+   - Response: `200 OK` with favorites list
+
+9. **GET `/api/v1/notes/search`** - Search Notes
+   - Search by keyword in title, content, or tags
+   - Pagination support
+   - Query param: `q` (required)
+   - Response: `200 OK` with search results
+
+10. **GET `/api/v1/notes/tags`** - Get Notes by Tags
+    - Filter notes by specific tags
+    - Multiple tags support (comma-separated)
+    - Pagination support
+    - Query param: `tags` (required)
+    - Response: `200 OK` with filtered notes
+
+11. **GET `/api/v1/notes/count`** - Get Notes Count
+    - Get total count of user's notes
+    - Response: `200 OK` with count
+
+#### Database Changes
+- **New Table: `notes`**
+  - `id` (Primary Key)
+  - `user_id` (Foreign Key to users)
+  - `title` (varchar 255, required)
+  - `content` (text, required)
+  - `tags` (varchar 500, comma-separated)
+  - `is_favorite` (boolean, default: false)
+  - `created_at`, `updated_at`, `deleted_at` (timestamps)
+
+#### New Files
+- `internal/models/note.go` - Note model definition
+- `internal/services/note_service.go` - Notes business logic
+- `internal/controllers/note_controller.go` - HTTP handlers
+- `docs/NOTES_API.md` - Complete API documentation
+- `docs/NOTES_API_QUICK_REFERENCE.md` - Quick reference guide
+- `tests/notes_api.http` - API testing examples
+
+#### Features
+✅ **Full CRUD Operations**
+- Create, read, update, and delete notes
+- Soft delete with recovery option
+- Hard delete for permanent removal
+
+✅ **Advanced Search & Filtering**
+- Full-text search in title, content, and tags
+- Filter by tags (supports multiple tags)
+- Filter by favorite status
+- Combine multiple filters
+
+✅ **Pagination & Sorting**
+- Configurable page size (max 100)
+- Sort by created_at, updated_at, or title
+- Ascending or descending order
+- Total pages and count in response
+
+✅ **Favorites System**
+- Mark/unmark notes as favorites
+- Quick access to favorite notes only
+- Toggle favorite status easily
+
+✅ **Tags Organization**
+- Comma-separated tags for categorization
+- Filter notes by specific tags
+- Search within tags
+
+✅ **Security**
+- All endpoints require JWT authentication
+- User-specific note isolation
+- Comprehensive input validation
+
+#### Documentation
+- Complete API documentation with examples
+- Quick reference guide for developers
+- HTTP test file with 50+ test cases
+- Error handling examples
+- Integration test flow
+
+---
+
 ## [2.0.0] - 2025-10-14
 
 ### 🎉 Major Changes - New Registration Flow
