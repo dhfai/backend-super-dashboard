@@ -16,6 +16,7 @@ func SetupRoutes(
 	noteController *controllers.NoteController,
 	transactionController *controllers.TransactionController,
 	dailyTargetController *controllers.DailyTargetController,
+	tradingActivityController *controllers.TradingActivityController,
 	financialGoalController *controllers.FinancialGoalController,
 	backtestStrategyController *controllers.BacktestStrategyController,
 	budgetController *controllers.BudgetController,
@@ -114,13 +115,29 @@ func SetupRoutes(
 				{
 					targets.POST("", dailyTargetController.CreateDailyTarget)
 					targets.GET("", dailyTargetController.GetAllDailyTargets)
+
+					// Specific paths MUST come before wildcard paths
 					targets.GET("/today", dailyTargetController.GetTodayTarget)
 					targets.GET("/month-summary", dailyTargetController.GetCurrentMonthSummary)
 					targets.GET("/week-summary", dailyTargetController.GetWeekSummary)
+
+					// Wildcard paths with nested routes
+					targets.POST("/:id/trades", tradingActivityController.AddTradeToTarget)
+					targets.GET("/:id/trades", tradingActivityController.GetTradingActivitiesByTarget)
+					targets.POST("/:id/refresh", dailyTargetController.RefreshActualValues)
+
+					// Simple wildcard paths at the end
 					targets.GET("/:id", dailyTargetController.GetDailyTargetByID)
 					targets.PUT("/:id", dailyTargetController.UpdateDailyTarget)
-					targets.POST("/:id/refresh", dailyTargetController.RefreshActualValues)
 					targets.DELETE("/:id", dailyTargetController.DeleteDailyTarget)
+				}
+
+				// Trading Activity endpoints (standalone)
+				trading := finance.Group("/trading-activities")
+				{
+					trading.GET("/stats", tradingActivityController.GetTradingStats)
+					trading.GET("/:id", tradingActivityController.GetTradingActivityByID)
+					trading.DELETE("/:id", tradingActivityController.DeleteTradingActivity)
 				}
 
 				// Financial Goal endpoints

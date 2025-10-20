@@ -36,27 +36,60 @@ func (Transaction) TableName() string {
 	return "transactions"
 }
 
-// DailyTarget represents daily financial targets
+// DailyTarget represents daily financial targets (for trading)
 type DailyTarget struct {
-	ID            uint           `gorm:"primaryKey" json:"id"`
-	UserID        uuid.UUID      `gorm:"type:uuid;not null;index" json:"user_id"`
-	Date          time.Time      `gorm:"type:date;not null;index;uniqueIndex:idx_user_date" json:"date"`
-	IncomeTarget  float64        `gorm:"type:decimal(15,2);not null;default:0" json:"income_target"`
-	ExpenseLimit  float64        `gorm:"type:decimal(15,2);not null;default:0" json:"expense_limit"`
-	SavingsTarget float64        `gorm:"type:decimal(15,2);not null;default:0" json:"savings_target"`
-	ActualIncome  float64        `gorm:"type:decimal(15,2);default:0" json:"actual_income"`
-	ActualExpense float64        `gorm:"type:decimal(15,2);default:0" json:"actual_expense"`
-	ActualSavings float64        `gorm:"type:decimal(15,2);default:0" json:"actual_savings"`
-	Notes         string         `gorm:"type:text" json:"notes"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
-	User          User           `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	ID                uint              `gorm:"primaryKey" json:"id"`
+	UserID            uuid.UUID         `gorm:"type:uuid;not null;index" json:"user_id"`
+	Date              time.Time         `gorm:"type:date;not null;index;uniqueIndex:idx_user_date" json:"date"`
+	IncomeTarget      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"income_target"`  // Profit target
+	ExpenseLimit      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"expense_limit"`  // Max loss allowed
+	SavingsTarget     float64           `gorm:"type:decimal(15,2);not null;default:0" json:"savings_target"` // Optional savings goal
+	ActualIncome      float64           `gorm:"type:decimal(15,2);default:0" json:"actual_income"`           // Total profit achieved
+	ActualExpense     float64           `gorm:"type:decimal(15,2);default:0" json:"actual_expense"`          // Total loss incurred
+	ActualSavings     float64           `gorm:"type:decimal(15,2);default:0" json:"actual_savings"`          // Net profit (income - expense)
+	RemainingIncome   float64           `gorm:"type:decimal(15,2);default:0" json:"remaining_income"`        // Income left to achieve
+	RemainingExpense  float64           `gorm:"type:decimal(15,2);default:0" json:"remaining_expense"`       // Loss budget left
+	TotalTrades       int               `gorm:"default:0" json:"total_trades"`                               // Number of trades
+	WinningTrades     int               `gorm:"default:0" json:"winning_trades"`                             // Number of wins
+	LosingTrades      int               `gorm:"default:0" json:"losing_trades"`                              // Number of losses
+	WinRate           float64           `gorm:"type:decimal(5,2);default:0" json:"win_rate"`                 // Win rate percentage
+	IsCompleted       bool              `gorm:"default:false" json:"is_completed"`                           // Target reached?
+	CompletedAt       *time.Time        `gorm:"type:timestamp" json:"completed_at,omitempty"`                // When target was reached
+	Notes             string            `gorm:"type:text" json:"notes"`                                      // Trading plan notes
+	CreatedAt         time.Time         `json:"created_at"`
+	UpdatedAt         time.Time         `json:"updated_at"`
+	DeletedAt         gorm.DeletedAt    `gorm:"index" json:"deleted_at,omitempty"`
+	User              User              `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	TradingActivities []TradingActivity `gorm:"foreignKey:DailyTargetID" json:"trading_activities,omitempty"`
 }
 
 // TableName specifies the table name for DailyTarget model
 func (DailyTarget) TableName() string {
 	return "daily_targets"
+}
+
+// TradingActivity represents individual trading activities linked to a daily target
+type TradingActivity struct {
+	ID            uint           `gorm:"primaryKey" json:"id"`
+	DailyTargetID uint           `gorm:"not null;index" json:"daily_target_id"`
+	UserID        uuid.UUID      `gorm:"type:uuid;not null;index" json:"user_id"`
+	TradeType     string         `gorm:"type:varchar(20);not null" json:"trade_type"`  // "win" or "loss"
+	Amount        float64        `gorm:"type:decimal(15,2);not null" json:"amount"`    // Profit or loss amount
+	Pips          int            `gorm:"default:0" json:"pips"`                        // Pips gained/lost
+	LotSize       float64        `gorm:"type:decimal(10,2);default:0" json:"lot_size"` // Lot size (e.g., 0.01)
+	Symbol        string         `gorm:"type:varchar(50)" json:"symbol"`               // Trading pair (e.g., EURUSD)
+	Description   string         `gorm:"type:text" json:"description"`
+	TradeTime     time.Time      `gorm:"type:timestamp;not null" json:"trade_time"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	User          User           `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	DailyTarget   DailyTarget    `gorm:"foreignKey:DailyTargetID" json:"daily_target,omitempty"`
+}
+
+// TableName specifies the table name for TradingActivity model
+func (TradingActivity) TableName() string {
+	return "trading_activities"
 }
 
 // FinancialGoal represents long-term financial goals

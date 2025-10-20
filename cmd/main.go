@@ -46,6 +46,7 @@ func main() {
 	// Financial Management Services
 	transactionService := services.NewTransactionService(database.DB)
 	dailyTargetService := services.NewDailyTargetService(database.DB, transactionService)
+	tradingActivityService := services.NewTradingActivityService(database.DB)
 	financialGoalService := services.NewFinancialGoalService(database.DB)
 	backtestStrategyService := services.NewBacktestStrategyService(database.DB)
 	budgetService := services.NewBudgetService(database.DB, transactionService)
@@ -69,6 +70,7 @@ func main() {
 	// Financial Management Controllers
 	transactionController := controllers.NewTransactionController(transactionService)
 	dailyTargetController := controllers.NewDailyTargetController(dailyTargetService)
+	tradingActivityController := controllers.NewTradingActivityController(tradingActivityService)
 	financialGoalController := controllers.NewFinancialGoalController(financialGoalService)
 	backtestStrategyController := controllers.NewBacktestStrategyController(backtestStrategyService)
 	budgetController := controllers.NewBudgetController(budgetService)
@@ -86,7 +88,7 @@ func main() {
 	routes.SetupMiddleware(router)
 
 	routes.SetupRoutes(router, authController, profileController, noteController,
-		transactionController, dailyTargetController, financialGoalController,
+		transactionController, dailyTargetController, tradingActivityController, financialGoalController,
 		backtestStrategyController, budgetController, authService, database.DB)
 
 	serverAddr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)

@@ -59,6 +59,7 @@ func (d *Database) Migrate() error {
 		&models.Note{},
 		&models.Transaction{},
 		&models.DailyTarget{},
+		&models.TradingActivity{},
 		&models.FinancialGoal{},
 		&models.BacktestStrategy{},
 		&models.Budget{},

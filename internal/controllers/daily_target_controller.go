@@ -216,6 +216,17 @@ func (c *DailyTargetController) UpdateDailyTarget(ctx *gin.Context) {
 	target, err := c.dailyTargetService.UpdateDailyTarget(userID, uint(targetID), &req)
 	if err != nil {
 		logger.GetLogger().Error("Failed to update daily target: ", err)
+
+		// Handle specific error types
+		if utils.IsNotFoundError(err) {
+			ctx.JSON(http.StatusNotFound, models.APIResponse{
+				Success: false,
+				Message: "Daily target not found",
+				Error:   err.Error(),
+			})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, models.APIResponse{
 			Success: false,
 			Message: "Failed to update daily target",
@@ -256,6 +267,17 @@ func (c *DailyTargetController) DeleteDailyTarget(ctx *gin.Context) {
 
 	if err := c.dailyTargetService.DeleteDailyTarget(userID, uint(targetID)); err != nil {
 		logger.GetLogger().Error("Failed to delete daily target: ", err)
+
+		// Handle specific error types
+		if utils.IsNotFoundError(err) {
+			ctx.JSON(http.StatusNotFound, models.APIResponse{
+				Success: false,
+				Message: "Daily target not found",
+				Error:   err.Error(),
+			})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, models.APIResponse{
 			Success: false,
 			Message: "Failed to delete daily target",
@@ -389,6 +411,17 @@ func (c *DailyTargetController) RefreshActualValues(ctx *gin.Context) {
 	target, err := c.dailyTargetService.RefreshActualValues(userID, uint(targetID))
 	if err != nil {
 		logger.GetLogger().Error("Failed to refresh actual values: ", err)
+
+		// Handle specific error types
+		if utils.IsNotFoundError(err) {
+			ctx.JSON(http.StatusNotFound, models.APIResponse{
+				Success: false,
+				Message: "Daily target not found",
+				Error:   err.Error(),
+			})
+			return
+		}
+
 		ctx.JSON(http.StatusInternalServerError, models.APIResponse{
 			Success: false,
 			Message: "Failed to refresh actual values",

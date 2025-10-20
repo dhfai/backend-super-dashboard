@@ -243,22 +243,74 @@ type UpdateDailyTargetRequest struct {
 	Notes         string   `json:"notes" validate:"max=1000"`
 }
 
+// TradingActivity DTOs
+type CreateTradingActivityRequest struct {
+	TradeType   string    `json:"trade_type" validate:"required,oneof=win loss"` // "win" or "loss"
+	Amount      float64   `json:"amount" validate:"required,gt=0"`
+	Pips        int       `json:"pips" validate:"gte=0"`
+	LotSize     float64   `json:"lot_size" validate:"gte=0"`
+	Symbol      string    `json:"symbol" validate:"max=50"`
+	Description string    `json:"description" validate:"max=1000"`
+	TradeTime   time.Time `json:"trade_time"`
+}
+
+type TradingActivityResponse struct {
+	ID            uint      `json:"id"`
+	DailyTargetID uint      `json:"daily_target_id"`
+	UserID        string    `json:"user_id"`
+	TradeType     string    `json:"trade_type"` // "win" or "loss"
+	Amount        float64   `json:"amount"`
+	Pips          int       `json:"pips"`
+	LotSize       float64   `json:"lot_size"`
+	Symbol        string    `json:"symbol"`
+	Description   string    `json:"description"`
+	TradeTime     time.Time `json:"trade_time"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+func (t *TradingActivity) ToTradingActivityResponse() *TradingActivityResponse {
+	return &TradingActivityResponse{
+		ID:            t.ID,
+		DailyTargetID: t.DailyTargetID,
+		UserID:        t.UserID.String(),
+		TradeType:     t.TradeType,
+		Amount:        t.Amount,
+		Pips:          t.Pips,
+		LotSize:       t.LotSize,
+		Symbol:        t.Symbol,
+		Description:   t.Description,
+		TradeTime:     t.TradeTime,
+		CreatedAt:     t.CreatedAt,
+		UpdatedAt:     t.UpdatedAt,
+	}
+}
+
 type DailyTargetResponse struct {
-	ID              uint      `json:"id"`
-	UserID          string    `json:"user_id"`
-	Date            time.Time `json:"date"`
-	IncomeTarget    float64   `json:"income_target"`
-	ExpenseLimit    float64   `json:"expense_limit"`
-	SavingsTarget   float64   `json:"savings_target"`
-	ActualIncome    float64   `json:"actual_income"`
-	ActualExpense   float64   `json:"actual_expense"`
-	ActualSavings   float64   `json:"actual_savings"`
-	IncomeProgress  float64   `json:"income_progress"`  // percentage
-	ExpenseProgress float64   `json:"expense_progress"` // percentage
-	SavingsProgress float64   `json:"savings_progress"` // percentage
-	Notes           string    `json:"notes"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	ID                uint                      `json:"id"`
+	UserID            string                    `json:"user_id"`
+	Date              time.Time                 `json:"date"`
+	IncomeTarget      float64                   `json:"income_target"`
+	ExpenseLimit      float64                   `json:"expense_limit"`
+	SavingsTarget     float64                   `json:"savings_target"`
+	ActualIncome      float64                   `json:"actual_income"`
+	ActualExpense     float64                   `json:"actual_expense"`
+	ActualSavings     float64                   `json:"actual_savings"`
+	RemainingIncome   float64                   `json:"remaining_income"`  // Income left to achieve
+	RemainingExpense  float64                   `json:"remaining_expense"` // Loss budget left
+	IncomeProgress    float64                   `json:"income_progress"`   // percentage
+	ExpenseProgress   float64                   `json:"expense_progress"`  // percentage
+	SavingsProgress   float64                   `json:"savings_progress"`  // percentage
+	TotalTrades       int                       `json:"total_trades"`      // Number of trades
+	WinningTrades     int                       `json:"winning_trades"`    // Number of wins
+	LosingTrades      int                       `json:"losing_trades"`     // Number of losses
+	WinRate           float64                   `json:"win_rate"`          // Win rate percentage
+	IsCompleted       bool                      `json:"is_completed"`
+	CompletedAt       *time.Time                `json:"completed_at,omitempty"`
+	Notes             string                    `json:"notes"`
+	TradingActivities []TradingActivityResponse `json:"trading_activities,omitempty"`
+	CreatedAt         time.Time                 `json:"created_at"`
+	UpdatedAt         time.Time                 `json:"updated_at"`
 }
 
 type DailyTargetListResponse struct {
@@ -271,18 +323,26 @@ type DailyTargetListResponse struct {
 
 func (d *DailyTarget) ToDailyTargetResponse() *DailyTargetResponse {
 	response := &DailyTargetResponse{
-		ID:            d.ID,
-		UserID:        d.UserID.String(),
-		Date:          d.Date,
-		IncomeTarget:  d.IncomeTarget,
-		ExpenseLimit:  d.ExpenseLimit,
-		SavingsTarget: d.SavingsTarget,
-		ActualIncome:  d.ActualIncome,
-		ActualExpense: d.ActualExpense,
-		ActualSavings: d.ActualSavings,
-		Notes:         d.Notes,
-		CreatedAt:     d.CreatedAt,
-		UpdatedAt:     d.UpdatedAt,
+		ID:               d.ID,
+		UserID:           d.UserID.String(),
+		Date:             d.Date,
+		IncomeTarget:     d.IncomeTarget,
+		ExpenseLimit:     d.ExpenseLimit,
+		SavingsTarget:    d.SavingsTarget,
+		ActualIncome:     d.ActualIncome,
+		ActualExpense:    d.ActualExpense,
+		ActualSavings:    d.ActualSavings,
+		RemainingIncome:  d.RemainingIncome,
+		RemainingExpense: d.RemainingExpense,
+		TotalTrades:      d.TotalTrades,
+		WinningTrades:    d.WinningTrades,
+		LosingTrades:     d.LosingTrades,
+		WinRate:          d.WinRate,
+		IsCompleted:      d.IsCompleted,
+		CompletedAt:      d.CompletedAt,
+		Notes:            d.Notes,
+		CreatedAt:        d.CreatedAt,
+		UpdatedAt:        d.UpdatedAt,
 	}
 
 	// Calculate progress percentages
@@ -294,6 +354,14 @@ func (d *DailyTarget) ToDailyTargetResponse() *DailyTargetResponse {
 	}
 	if d.SavingsTarget > 0 {
 		response.SavingsProgress = (d.ActualSavings / d.SavingsTarget) * 100
+	}
+
+	// Convert trading activities
+	if len(d.TradingActivities) > 0 {
+		response.TradingActivities = make([]TradingActivityResponse, len(d.TradingActivities))
+		for i, activity := range d.TradingActivities {
+			response.TradingActivities[i] = *activity.ToTradingActivityResponse()
+		}
 	}
 
 	return response

@@ -1,0 +1,330 @@
+### Trading Feature API Tests
+### Base URL: http://localhost:8080/api/v1
+
+@baseUrl = http://localhost:8080/api/v1
+@token = YOUR_JWT_TOKEN_HERE
+
+### ============================================
+### DAILY TARGET - TRADING PLAN
+### ============================================
+
+### Create Daily Target for Trading
+POST {{baseUrl}}/finance/daily-targets HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "date": "2025-10-20T00:00:00Z",
+  "income_target": 1000000.00,
+  "expense_limit": 100000.00,
+  "savings_target": 50000.00,
+  "notes": "Trading Plan - Scalping EURUSD & GBPUSD"
+}
+
+### Get Today's Trading Target
+GET {{baseUrl}}/finance/daily-targets/today HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### TRADING ACTIVITIES - RECORD TRADES
+### ============================================
+
+### Add Trade - WIN (Profit)
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 160000.00,
+  "pips": 100,
+  "lot_size": 0.01,
+  "symbol": "EURUSD",
+  "description": "TP hit, bullish breakout strategy",
+  "trade_time": "2025-10-20T09:30:00Z"
+}
+
+### Add Trade - WIN #2
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 150000.00,
+  "pips": 95,
+  "lot_size": 0.01,
+  "symbol": "GBPUSD",
+  "description": "Continuation pattern, TP reached",
+  "trade_time": "2025-10-20T10:15:00Z"
+}
+
+### Add Trade - LOSS (Stop Loss Hit)
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "loss",
+  "amount": 30000.00,
+  "pips": 30,
+  "lot_size": 0.01,
+  "symbol": "EURUSD",
+  "description": "SL hit, reversal happened",
+  "trade_time": "2025-10-20T11:00:00Z"
+}
+
+### Add Trade - WIN #3
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 180000.00,
+  "pips": 110,
+  "lot_size": 0.01,
+  "symbol": "USDJPY",
+  "description": "Trend following, strong momentum",
+  "trade_time": "2025-10-20T13:30:00Z"
+}
+
+### Add Trade - LOSS #2
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "loss",
+  "amount": 25000.00,
+  "pips": 25,
+  "lot_size": 0.01,
+  "symbol": "GBPUSD",
+  "description": "False breakout, SL triggered",
+  "trade_time": "2025-10-20T14:45:00Z"
+}
+
+### Add Trade - WIN #4
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 140000.00,
+  "pips": 88,
+  "lot_size": 0.01,
+  "symbol": "EURUSD",
+  "description": "Scalping in tight range",
+  "trade_time": "2025-10-20T15:20:00Z"
+}
+
+### Add Trade - WIN #5
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 170000.00,
+  "pips": 105,
+  "lot_size": 0.01,
+  "symbol": "GBPUSD",
+  "description": "Perfect entry at support level",
+  "trade_time": "2025-10-20T16:10:00Z"
+}
+
+### Add Trade - WIN #6 (Should Complete Target!)
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 210000.00,
+  "pips": 130,
+  "lot_size": 0.01,
+  "symbol": "EURUSD",
+  "description": "Big move, trend continuation - TARGET REACHED!",
+  "trade_time": "2025-10-20T17:00:00Z"
+}
+
+### Get All Trades for Daily Target
+GET {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Specific Trading Activity
+GET {{baseUrl}}/finance/trading-activities/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Delete Trading Activity (Reverses Calculation)
+DELETE {{baseUrl}}/finance/trading-activities/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### TRADING STATISTICS
+### ============================================
+
+### Get Trading Stats - Today
+GET {{baseUrl}}/finance/trading-activities/stats HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Trading Stats - This Week
+GET {{baseUrl}}/finance/trading-activities/stats?date_from=2025-10-14&date_to=2025-10-20 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Trading Stats - This Month
+GET {{baseUrl}}/finance/trading-activities/stats?date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### SCENARIO TESTING
+### ============================================
+
+### Scenario 1: Check Target After Multiple Trades
+# After adding 7 trades above, check if target is completed
+GET {{baseUrl}}/finance/daily-targets/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+# Expected Response:
+# {
+#   "actual_income": 1010000.00,
+#   "actual_expense": 55000.00,
+#   "actual_savings": 955000.00,
+#   "remaining_income": 0.00,
+#   "total_trades": 7,
+#   "winning_trades": 6,
+#   "losing_trades": 1,
+#   "win_rate": 85.71,
+#   "is_completed": true,
+#   "completed_at": "2025-10-20T17:00:00Z"
+# }
+
+### Scenario 2: Bad Day (Stop Loss Hit)
+POST {{baseUrl}}/finance/daily-targets HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "date": "2025-10-21T00:00:00Z",
+  "income_target": 1000000.00,
+  "expense_limit": 100000.00,
+  "savings_target": 50000.00,
+  "notes": "Bad Market Conditions"
+}
+
+### Add Multiple Losses to Hit Stop Loss
+POST {{baseUrl}}/finance/daily-targets/2/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "loss",
+  "amount": 35000.00,
+  "pips": 35,
+  "lot_size": 0.01,
+  "symbol": "EURUSD",
+  "description": "Bad entry"
+}
+
+###
+POST {{baseUrl}}/finance/daily-targets/2/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "loss",
+  "amount": 40000.00,
+  "pips": 40,
+  "lot_size": 0.01,
+  "symbol": "GBPUSD",
+  "description": "Trend reversal"
+}
+
+###
+POST {{baseUrl}}/finance/daily-targets/2/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "loss",
+  "amount": 30000.00,
+  "pips": 30,
+  "lot_size": 0.01,
+  "symbol": "USDJPY",
+  "description": "Stop loss hit - LIMIT EXCEEDED!"
+}
+
+### Check if Auto-Completed Due to Stop Loss
+GET {{baseUrl}}/finance/daily-targets/2 HTTP/1.1
+Authorization: Bearer {{token}}
+
+# Expected Response:
+# {
+#   "actual_income": 0.00,
+#   "actual_expense": 105000.00,  // Exceeded limit!
+#   "is_completed": true,  // Auto-stopped
+#   "total_trades": 3,
+#   "winning_trades": 0,
+#   "losing_trades": 3,
+#   "win_rate": 0.00
+# }
+
+### Scenario 3: Monthly Review
+### Get All Daily Targets for October
+GET {{baseUrl}}/finance/daily-targets?date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Trading Stats for October
+GET {{baseUrl}}/finance/trading-activities/stats?date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Week Summary
+GET {{baseUrl}}/finance/daily-targets/week-summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Month Summary
+GET {{baseUrl}}/finance/daily-targets/month-summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### ERROR TESTING
+### ============================================
+
+### Try to Create Duplicate Daily Target (Should Return 409 Conflict)
+POST {{baseUrl}}/finance/daily-targets HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "date": "2025-10-20T00:00:00Z",
+  "income_target": 500000.00,
+  "expense_limit": 50000.00,
+  "savings_target": 25000.00
+}
+
+### Try to Add Trade to Completed Target (Should Return 400 Bad Request)
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "win",
+  "amount": 100000.00,
+  "pips": 50,
+  "lot_size": 0.01,
+  "symbol": "EURUSD"
+}
+
+### Try Invalid Trade Type (Should Return 400 Bad Request)
+POST {{baseUrl}}/finance/daily-targets/1/trades HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "trade_type": "invalid",
+  "amount": 100000.00,
+  "pips": 50,
+  "lot_size": 0.01,
+  "symbol": "EURUSD"
+}

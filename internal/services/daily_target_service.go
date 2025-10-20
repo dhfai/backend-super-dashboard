@@ -32,15 +32,17 @@ func (s *DailyTargetService) CreateDailyTarget(userID uuid.UUID, req *models.Cre
 	}
 
 	target := &models.DailyTarget{
-		UserID:        userID,
-		Date:          req.Date,
-		IncomeTarget:  req.IncomeTarget,
-		ExpenseLimit:  req.ExpenseLimit,
-		SavingsTarget: req.SavingsTarget,
-		Notes:         req.Notes,
+		UserID:           userID,
+		Date:             req.Date,
+		IncomeTarget:     req.IncomeTarget,
+		ExpenseLimit:     req.ExpenseLimit,
+		SavingsTarget:    req.SavingsTarget,
+		RemainingIncome:  req.IncomeTarget, // Initially equals target
+		RemainingExpense: req.ExpenseLimit, // Initially equals limit
+		Notes:            req.Notes,
 	}
 
-	// Calculate actual values from transactions
+	// Calculate actual values from transactions (optional, for backward compatibility)
 	if err := s.updateActualValues(target); err != nil {
 		return nil, err
 	}
@@ -238,21 +240,15 @@ func (s *DailyTargetService) updateActualValues(target *models.DailyTarget) erro
 	return nil
 }
 
-// GetTodayTarget retrieves or creates today's target
+// GetTodayTarget retrieves today's target (does NOT auto-create)
 func (s *DailyTargetService) GetTodayTarget(userID uuid.UUID) (*models.DailyTarget, error) {
 	today := time.Now().Truncate(24 * time.Hour)
 
 	target, err := s.GetDailyTargetByDate(userID, today)
 	if err != nil {
-		// If not found, create default target for today
+		// Return error if not found (let user decide to create manually)
 		if err.Error() == "daily target not found" {
-			return s.CreateDailyTarget(userID, &models.CreateDailyTargetRequest{
-				Date:          today,
-				IncomeTarget:  0,
-				ExpenseLimit:  0,
-				SavingsTarget: 0,
-				Notes:         "Auto-created target",
-			})
+			return nil, fmt.Errorf("%w: no daily target found for today", utils.ErrNotFound)
 		}
 		return nil, err
 	}
