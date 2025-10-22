@@ -39,7 +39,7 @@ func (Transaction) TableName() string {
 // DailyTarget represents daily financial targets (for trading)
 type DailyTarget struct {
 	ID                uint              `gorm:"primaryKey" json:"id"`
-	UserID            uuid.UUID         `gorm:"type:uuid;not null;index" json:"user_id"`
+	UserID            uuid.UUID         `gorm:"type:uuid;not null;index;uniqueIndex:idx_user_date" json:"user_id"`
 	Date              time.Time         `gorm:"type:date;not null;index;uniqueIndex:idx_user_date" json:"date"`
 	IncomeTarget      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"income_target"`  // Profit target
 	ExpenseLimit      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"expense_limit"`  // Max loss allowed
@@ -84,7 +84,7 @@ type TradingActivity struct {
 	UpdatedAt     time.Time      `json:"updated_at"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 	User          User           `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	DailyTarget   DailyTarget    `gorm:"foreignKey:DailyTargetID" json:"daily_target,omitempty"`
+	DailyTarget   DailyTarget    `gorm:"foreignKey:DailyTargetID;constraint:OnDelete:CASCADE" json:"daily_target,omitempty"`
 }
 
 // TableName specifies the table name for TradingActivity model

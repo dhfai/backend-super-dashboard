@@ -66,12 +66,13 @@ func (s *DailyTargetService) GetDailyTargetByID(userID uuid.UUID, targetID uint)
 	return &target, nil
 }
 
-// GetDailyTargetByDate retrieves a daily target by date
+// GetDailyTargetByDate retrieves a daily target by date (ignores time, only matches date)
 func (s *DailyTargetService) GetDailyTargetByDate(userID uuid.UUID, date time.Time) (*models.DailyTarget, error) {
 	var target models.DailyTarget
-	if err := s.db.Where("user_id = ? AND date = ?", userID, date).First(&target).Error; err != nil {
+	// Use DATE() function to compare only the date part, ignoring time and timezone
+	if err := s.db.Where("user_id = ? AND DATE(date) = DATE(?)", userID, date).First(&target).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("daily target not found")
+			return nil, fmt.Errorf("%w: daily target not found", utils.ErrNotFound)
 		}
 		return nil, err
 	}
@@ -147,16 +148,42 @@ func (s *DailyTargetService) UpdateDailyTarget(userID uuid.UUID, targetID uint, 
 	return target, nil
 }
 
-// DeleteDailyTarget soft deletes a daily target
+// DeleteDailyTarget PERMANENTLY deletes a daily target and all associated trading activities
 func (s *DailyTargetService) DeleteDailyTarget(userID uuid.UUID, targetID uint) error {
-	result := s.db.Where("id = ? AND user_id = ?", targetID, userID).Delete(&models.DailyTarget{})
-	if result.Error != nil {
-		return result.Error
+	// Start transaction
+	tx := s.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Verify target exists and belongs to user
+	var target models.DailyTarget
+	if err := tx.Where("id = ? AND user_id = ?", targetID, userID).First(&target).Error; err != nil {
+		tx.Rollback()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("%w: daily target not found", utils.ErrNotFound)
+		}
+		return err
 	}
-	if result.RowsAffected == 0 {
-		return errors.New("daily target not found")
+
+	// HARD DELETE all associated trading activities FIRST (foreign key constraint)
+	// Use Unscoped() to permanently delete, not soft delete
+	if err := tx.Unscoped().Where("daily_target_id = ? AND user_id = ?", targetID, userID).Delete(&models.TradingActivity{}).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to delete trading activities: %w", err)
 	}
-	return nil
+
+	// HARD DELETE the daily target (permanently remove from database)
+	// Use Unscoped() to bypass soft delete and truly remove the row
+	if err := tx.Unscoped().Delete(&target).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to delete daily target: %w", err)
+	}
+
+	// Commit transaction
+	return tx.Commit().Error
 }
 
 // RefreshActualValues updates actual values from transactions
@@ -242,27 +269,29 @@ func (s *DailyTargetService) updateActualValues(target *models.DailyTarget) erro
 
 // GetTodayTarget retrieves today's target (does NOT auto-create)
 func (s *DailyTargetService) GetTodayTarget(userID uuid.UUID) (*models.DailyTarget, error) {
-	today := time.Now().Truncate(24 * time.Hour)
+	// Use local time and truncate to start of day (00:00:00)
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	target, err := s.GetDailyTargetByDate(userID, today)
-	if err != nil {
-		// Return error if not found (let user decide to create manually)
-		if err.Error() == "daily target not found" {
+	// Try exact date match first
+	var target models.DailyTarget
+	if err := s.db.Where("user_id = ? AND DATE(date) = DATE(?)", userID, today).First(&target).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("%w: no daily target found for today", utils.ErrNotFound)
 		}
 		return nil, err
 	}
 
 	// Refresh actual values
-	if err := s.updateActualValues(target); err != nil {
+	if err := s.updateActualValues(&target); err != nil {
 		return nil, err
 	}
 
-	if err := s.db.Save(target).Error; err != nil {
+	if err := s.db.Save(&target).Error; err != nil {
 		return nil, err
 	}
 
-	return target, nil
+	return &target, nil
 }
 
 // GetWeekSummary retrieves summary for current week

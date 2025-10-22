@@ -307,6 +307,16 @@ func (c *DailyTargetController) GetTodayTarget(ctx *gin.Context) {
 
 	target, err := c.dailyTargetService.GetTodayTarget(userID)
 	if err != nil {
+		// Return 404 if no target found for today
+		if utils.IsNotFoundError(err) {
+			ctx.JSON(http.StatusNotFound, models.APIResponse{
+				Success: false,
+				Message: "No daily target found for today",
+				Error:   err.Error(),
+			})
+			return
+		}
+
 		logger.GetLogger().Error("Failed to get today's target: ", err)
 		ctx.JSON(http.StatusInternalServerError, models.APIResponse{
 			Success: false,
