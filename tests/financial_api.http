@@ -1,0 +1,495 @@
+### Financial Management API Tests
+### Base URL: http://localhost:8080/api/v1
+
+@baseUrl = http://localhost:8080/api/v1
+@token = YOUR_JWT_TOKEN_HERE
+
+### ============================================
+### TRANSACTIONS API
+### ============================================
+
+### Create Transaction - Income
+POST {{baseUrl}}/finance/transactions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "type": "income",
+  "amount": 5000.00,
+  "category": "Salary",
+  "description": "Monthly salary",
+  "date": "2025-10-15T00:00:00Z",
+  "tags": "monthly,income,salary"
+}
+
+### Create Transaction - Expense
+POST {{baseUrl}}/finance/transactions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "type": "expense",
+  "amount": 150.00,
+  "category": "Food",
+  "description": "Groceries",
+  "date": "2025-10-19T00:00:00Z",
+  "tags": "food,groceries"
+}
+
+### Get All Transactions
+GET {{baseUrl}}/finance/transactions?page=1&page_size=10 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get All Transactions with Filters
+GET {{baseUrl}}/finance/transactions?type=expense&date_from=2025-10-01&date_to=2025-10-31&sort_by=date&sort_order=desc HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Transaction by ID
+GET {{baseUrl}}/finance/transactions/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Update Transaction
+PUT {{baseUrl}}/finance/transactions/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 5500.00,
+  "description": "Updated monthly salary"
+}
+
+### Delete Transaction
+DELETE {{baseUrl}}/finance/transactions/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Transactions by Category
+GET {{baseUrl}}/finance/transactions/category/Food?page=1&page_size=20 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Transaction Summary
+GET {{baseUrl}}/finance/transactions/summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Transaction Summary with Date Range
+GET {{baseUrl}}/finance/transactions/summary?date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Category Breakdown
+GET {{baseUrl}}/finance/transactions/breakdown HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Category Breakdown - Expenses Only
+GET {{baseUrl}}/finance/transactions/breakdown?type=expense&date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Monthly Trend
+GET {{baseUrl}}/finance/transactions/trend?months=6 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### DAILY TARGETS API
+### ============================================
+
+### Create Daily Target
+POST {{baseUrl}}/finance/daily-targets HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "date": "2025-10-20T00:00:00Z",
+  "income_target": 500.00,
+  "expense_limit": 200.00,
+  "savings_target": 300.00,
+  "notes": "Weekend target"
+}
+
+### Get All Daily Targets
+GET {{baseUrl}}/finance/daily-targets?page=1&page_size=10 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Daily Targets with Date Range
+GET {{baseUrl}}/finance/daily-targets?date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Today's Target
+GET {{baseUrl}}/finance/daily-targets/today HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Current Month Summary
+GET {{baseUrl}}/finance/daily-targets/month-summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Week Summary
+GET {{baseUrl}}/finance/daily-targets/week-summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Daily Target by ID
+GET {{baseUrl}}/finance/daily-targets/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Update Daily Target
+PUT {{baseUrl}}/finance/daily-targets/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "income_target": 600.00,
+  "expense_limit": 250.00,
+  "savings_target": 350.00,
+  "notes": "Updated weekend target"
+}
+
+### Refresh Actual Values
+POST {{baseUrl}}/finance/daily-targets/1/refresh HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Delete Daily Target
+DELETE {{baseUrl}}/finance/daily-targets/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### FINANCIAL GOALS API
+### ============================================
+
+### Create Financial Goal
+POST {{baseUrl}}/finance/goals HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Emergency Fund",
+  "description": "Build 6 months emergency fund",
+  "target_amount": 30000.00,
+  "current_amount": 5000.00,
+  "start_date": "2025-01-01T00:00:00Z",
+  "target_date": "2025-12-31T00:00:00Z",
+  "category": "Savings",
+  "priority": 2
+}
+
+### Create Financial Goal - Vacation
+POST {{baseUrl}}/finance/goals HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Summer Vacation",
+  "description": "Trip to Bali",
+  "target_amount": 15000.00,
+  "current_amount": 2000.00,
+  "start_date": "2025-01-01T00:00:00Z",
+  "target_date": "2025-06-30T00:00:00Z",
+  "category": "Travel",
+  "priority": 1
+}
+
+### Get All Financial Goals
+GET {{baseUrl}}/finance/goals?page=1&page_size=10 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Active Goals Only
+GET {{baseUrl}}/finance/goals?is_completed=false HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Completed Goals
+GET {{baseUrl}}/finance/goals?is_completed=true HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get High Priority Goals
+GET {{baseUrl}}/finance/goals?priority=2 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Goals by Category
+GET {{baseUrl}}/finance/goals?category=Savings HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Financial Goal by ID
+GET {{baseUrl}}/finance/goals/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Update Financial Goal
+PUT {{baseUrl}}/finance/goals/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "Updated Emergency Fund",
+  "target_amount": 35000.00,
+  "current_amount": 8000.00
+}
+
+### Update Goal Progress (Set Amount)
+POST {{baseUrl}}/finance/goals/1/update-progress HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 12000.00
+}
+
+### Add to Goal Progress
+POST {{baseUrl}}/finance/goals/1/add-progress HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 1000.00
+}
+
+### Get Goals Summary
+GET {{baseUrl}}/finance/goals/summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Delete Financial Goal
+DELETE {{baseUrl}}/finance/goals/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### BACKTEST STRATEGY API
+### ============================================
+
+### Create Backtest Strategy - Investment
+POST {{baseUrl}}/finance/backtest-strategies HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Monthly Investment Plan",
+  "description": "Invest $500 monthly with 8% annual return",
+  "strategy_type": "investment",
+  "initial_amount": 10000.00,
+  "monthly_contribution": 500.00,
+  "expected_return": 8.0,
+  "duration": 60,
+  "start_date": "2025-01-01T00:00:00Z"
+}
+
+### Create Backtest Strategy - Savings
+POST {{baseUrl}}/finance/backtest-strategies HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "High-Yield Savings",
+  "description": "Save $1000 monthly with 4% annual return",
+  "strategy_type": "savings",
+  "initial_amount": 5000.00,
+  "monthly_contribution": 1000.00,
+  "expected_return": 4.0,
+  "duration": 36,
+  "start_date": "2025-01-01T00:00:00Z"
+}
+
+### Get All Backtest Strategies
+GET {{baseUrl}}/finance/backtest-strategies?page=1&page_size=10 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Strategies by Type
+GET {{baseUrl}}/finance/backtest-strategies?strategy_type=investment HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Strategies by Status
+GET {{baseUrl}}/finance/backtest-strategies?status=active HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Backtest Strategy by ID
+GET {{baseUrl}}/finance/backtest-strategies/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Backtest Result
+GET {{baseUrl}}/finance/backtest-strategies/1/result HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Update Backtest Strategy
+PUT {{baseUrl}}/finance/backtest-strategies/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "monthly_contribution": 600.00,
+  "expected_return": 9.0
+}
+
+### Run Backtest (Recalculate)
+POST {{baseUrl}}/finance/backtest-strategies/1/run HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Activate Strategy
+POST {{baseUrl}}/finance/backtest-strategies/1/activate HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Complete Strategy
+POST {{baseUrl}}/finance/backtest-strategies/1/complete HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "actual_amount": 75000.00
+}
+
+### Delete Backtest Strategy
+DELETE {{baseUrl}}/finance/backtest-strategies/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### BUDGETS API
+### ============================================
+
+### Create Budget - Monthly
+POST {{baseUrl}}/finance/budgets HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "category": "Food & Dining",
+  "amount": 3000.00,
+  "period": "monthly",
+  "start_date": "2025-10-01T00:00:00Z",
+  "end_date": "2025-10-31T23:59:59Z",
+  "is_recurring": true
+}
+
+### Create Budget - Weekly
+POST {{baseUrl}}/finance/budgets HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "category": "Entertainment",
+  "amount": 500.00,
+  "period": "weekly",
+  "start_date": "2025-10-19T00:00:00Z",
+  "end_date": "2025-10-25T23:59:59Z",
+  "is_recurring": false
+}
+
+### Get All Budgets
+GET {{baseUrl}}/finance/budgets?page=1&page_size=10 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Active Budgets Only
+GET {{baseUrl}}/finance/budgets?is_active=true HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Budgets by Category
+GET {{baseUrl}}/finance/budgets?category=Food%20%26%20Dining HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Budgets by Period
+GET {{baseUrl}}/finance/budgets?period=monthly HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Budget by ID
+GET {{baseUrl}}/finance/budgets/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Update Budget
+PUT {{baseUrl}}/finance/budgets/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 3500.00
+}
+
+### Get Budget Summary
+GET {{baseUrl}}/finance/budgets/summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Monthly Budget Report - Current Month
+GET {{baseUrl}}/finance/budgets/monthly-report HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Get Monthly Budget Report - Specific Month
+GET {{baseUrl}}/finance/budgets/monthly-report?year=2025&month=9 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Check Budget Alerts - Default Threshold (80%)
+GET {{baseUrl}}/finance/budgets/alerts HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Check Budget Alerts - Custom Threshold
+GET {{baseUrl}}/finance/budgets/alerts?threshold=90 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Delete Budget
+DELETE {{baseUrl}}/finance/budgets/1 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### ============================================
+### INTEGRATION SCENARIOS
+### ============================================
+
+### Scenario 1: Daily Financial Routine
+### 1. Get today's target
+GET {{baseUrl}}/finance/daily-targets/today HTTP/1.1
+Authorization: Bearer {{token}}
+
+### 2. Add expense transaction
+POST {{baseUrl}}/finance/transactions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "type": "expense",
+  "amount": 50.00,
+  "category": "Food",
+  "description": "Lunch",
+  "date": "2025-10-19T12:00:00Z"
+}
+
+### 3. Refresh today's target
+POST {{baseUrl}}/finance/daily-targets/1/refresh HTTP/1.1
+Authorization: Bearer {{token}}
+
+### 4. Check budget alerts
+GET {{baseUrl}}/finance/budgets/alerts HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Scenario 2: Monthly Review
+### 1. Get transaction summary for the month
+GET {{baseUrl}}/finance/transactions/summary?date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### 2. Get category breakdown
+GET {{baseUrl}}/finance/transactions/breakdown?type=expense&date_from=2025-10-01&date_to=2025-10-31 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### 3. Get monthly budget report
+GET {{baseUrl}}/finance/budgets/monthly-report HTTP/1.1
+Authorization: Bearer {{token}}
+
+### 4. Get goals summary
+GET {{baseUrl}}/finance/goals/summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### 5. Get month summary for daily targets
+GET {{baseUrl}}/finance/daily-targets/month-summary HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Scenario 3: Goal Tracking
+### 1. Add income transaction
+POST {{baseUrl}}/finance/transactions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "type": "income",
+  "amount": 1000.00,
+  "category": "Savings",
+  "description": "Emergency fund contribution",
+  "date": "2025-10-19T00:00:00Z"
+}
+
+### 2. Update goal progress
+POST {{baseUrl}}/finance/goals/1/add-progress HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 1000.00
+}
+
+### 3. Check goal status
+GET {{baseUrl}}/finance/goals/1 HTTP/1.1
+Authorization: Bearer {{token}}

@@ -57,6 +57,12 @@ func (d *Database) Migrate() error {
 		&models.TempRegistration{},
 		&models.TokenBlacklist{},
 		&models.Note{},
+		&models.Transaction{},
+		&models.DailyTarget{},
+		&models.TradingActivity{},
+		&models.FinancialGoal{},
+		&models.BacktestStrategy{},
+		&models.Budget{},
 	)
 	if err != nil {
 		log.WithError(err).Error("Failed to run database migrations")
