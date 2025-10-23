@@ -1,5 +1,40 @@
 # CHANGELOG - API Updates
 
+## [2.2.0] - 2025-10-24
+
+### 🔄 Breaking Changes - Daily Target Simplification
+
+#### Removed
+- **Savings Target Field** from Daily Target feature
+  - Removed `savings_target` from request body (Create & Update)
+  - Removed `savings_target` from response
+  - Removed `savings_progress` from response
+  - Removed savings-related calculations from summary endpoint
+
+#### Modified Endpoints
+- **POST `/api/v1/daily-targets`** - Create Daily Target
+  - No longer accepts `savings_target` field
+  - Request body now only includes: `date`, `income_target`, `expense_limit`, `notes`
+
+- **PUT `/api/v1/daily-targets/:id`** - Update Daily Target
+  - No longer accepts `savings_target` field
+  - Update body now only includes: `income_target`, `expense_limit`, `notes`
+
+- **GET `/api/v1/daily-targets/:id`** - Get Daily Target
+  - Response no longer includes `savings_target` or `savings_progress` fields
+
+- **GET `/api/v1/daily-targets/summary`** - Get Summary
+  - Response no longer includes `total_savings_target` or `days_met_savings` fields
+
+#### Database Migration
+- Migration file: `002_remove_savings_target.sql`
+- Removes `savings_target` column from `daily_targets` table
+
+#### Documentation
+- See `docs/FEATURE_REMOVAL_SAVINGS_TARGET.md` for detailed migration guide
+
+---
+
 ## [2.1.0] - 2025-10-19
 
 ### 🎉 New Feature - Daily Notes API

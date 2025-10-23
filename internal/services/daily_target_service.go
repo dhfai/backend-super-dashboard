@@ -36,7 +36,6 @@ func (s *DailyTargetService) CreateDailyTarget(userID uuid.UUID, req *models.Cre
 		Date:             req.Date,
 		IncomeTarget:     req.IncomeTarget,
 		ExpenseLimit:     req.ExpenseLimit,
-		SavingsTarget:    req.SavingsTarget,
 		RemainingIncome:  req.IncomeTarget, // Initially equals target
 		RemainingExpense: req.ExpenseLimit, // Initially equals limit
 		Notes:            req.Notes,
@@ -129,9 +128,6 @@ func (s *DailyTargetService) UpdateDailyTarget(userID uuid.UUID, targetID uint, 
 	if req.ExpenseLimit != nil {
 		target.ExpenseLimit = *req.ExpenseLimit
 	}
-	if req.SavingsTarget != nil {
-		target.SavingsTarget = *req.SavingsTarget
-	}
 	if req.Notes != "" {
 		target.Notes = req.Notes
 	}
@@ -219,19 +215,16 @@ func (s *DailyTargetService) GetCurrentMonthSummary(userID uuid.UUID) (map[strin
 		"total_days":           len(targets),
 		"total_income_target":  0.0,
 		"total_expense_limit":  0.0,
-		"total_savings_target": 0.0,
 		"total_actual_income":  0.0,
 		"total_actual_expense": 0.0,
 		"total_actual_savings": 0.0,
 		"days_met_income":      0,
 		"days_met_expense":     0,
-		"days_met_savings":     0,
 	}
 
 	for _, target := range targets {
 		summary["total_income_target"] = summary["total_income_target"].(float64) + target.IncomeTarget
 		summary["total_expense_limit"] = summary["total_expense_limit"].(float64) + target.ExpenseLimit
-		summary["total_savings_target"] = summary["total_savings_target"].(float64) + target.SavingsTarget
 		summary["total_actual_income"] = summary["total_actual_income"].(float64) + target.ActualIncome
 		summary["total_actual_expense"] = summary["total_actual_expense"].(float64) + target.ActualExpense
 		summary["total_actual_savings"] = summary["total_actual_savings"].(float64) + target.ActualSavings
@@ -241,9 +234,6 @@ func (s *DailyTargetService) GetCurrentMonthSummary(userID uuid.UUID) (map[strin
 		}
 		if target.ActualExpense <= target.ExpenseLimit && target.ExpenseLimit > 0 {
 			summary["days_met_expense"] = summary["days_met_expense"].(int) + 1
-		}
-		if target.ActualSavings >= target.SavingsTarget && target.SavingsTarget > 0 {
-			summary["days_met_savings"] = summary["days_met_savings"].(int) + 1
 		}
 	}
 

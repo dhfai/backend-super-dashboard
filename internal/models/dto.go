@@ -229,18 +229,16 @@ func (t *Transaction) ToTransactionResponse() *TransactionResponse {
 
 // DailyTarget DTOs
 type CreateDailyTargetRequest struct {
-	Date          time.Time `json:"date" validate:"required"`
-	IncomeTarget  float64   `json:"income_target" validate:"gte=0"`
-	ExpenseLimit  float64   `json:"expense_limit" validate:"gte=0"`
-	SavingsTarget float64   `json:"savings_target" validate:"gte=0"`
-	Notes         string    `json:"notes" validate:"max=1000"`
+	Date         time.Time `json:"date" validate:"required"`
+	IncomeTarget float64   `json:"income_target" validate:"gte=0"`
+	ExpenseLimit float64   `json:"expense_limit" validate:"gte=0"`
+	Notes        string    `json:"notes" validate:"max=1000"`
 }
 
 type UpdateDailyTargetRequest struct {
-	IncomeTarget  *float64 `json:"income_target" validate:"omitempty,gte=0"`
-	ExpenseLimit  *float64 `json:"expense_limit" validate:"omitempty,gte=0"`
-	SavingsTarget *float64 `json:"savings_target" validate:"omitempty,gte=0"`
-	Notes         string   `json:"notes" validate:"max=1000"`
+	IncomeTarget *float64 `json:"income_target" validate:"omitempty,gte=0"`
+	ExpenseLimit *float64 `json:"expense_limit" validate:"omitempty,gte=0"`
+	Notes        string   `json:"notes" validate:"max=1000"`
 }
 
 // TradingActivity DTOs
@@ -292,7 +290,6 @@ type DailyTargetResponse struct {
 	Date              time.Time                 `json:"date"`
 	IncomeTarget      float64                   `json:"income_target"`
 	ExpenseLimit      float64                   `json:"expense_limit"`
-	SavingsTarget     float64                   `json:"savings_target"`
 	ActualIncome      float64                   `json:"actual_income"`
 	ActualExpense     float64                   `json:"actual_expense"`
 	ActualSavings     float64                   `json:"actual_savings"`
@@ -300,7 +297,6 @@ type DailyTargetResponse struct {
 	RemainingExpense  float64                   `json:"remaining_expense"` // Loss budget left
 	IncomeProgress    float64                   `json:"income_progress"`   // percentage
 	ExpenseProgress   float64                   `json:"expense_progress"`  // percentage
-	SavingsProgress   float64                   `json:"savings_progress"`  // percentage
 	TotalTrades       int                       `json:"total_trades"`      // Number of trades
 	WinningTrades     int                       `json:"winning_trades"`    // Number of wins
 	LosingTrades      int                       `json:"losing_trades"`     // Number of losses
@@ -328,7 +324,6 @@ func (d *DailyTarget) ToDailyTargetResponse() *DailyTargetResponse {
 		Date:             d.Date,
 		IncomeTarget:     d.IncomeTarget,
 		ExpenseLimit:     d.ExpenseLimit,
-		SavingsTarget:    d.SavingsTarget,
 		ActualIncome:     d.ActualIncome,
 		ActualExpense:    d.ActualExpense,
 		ActualSavings:    d.ActualSavings,
@@ -351,9 +346,6 @@ func (d *DailyTarget) ToDailyTargetResponse() *DailyTargetResponse {
 	}
 	if d.ExpenseLimit > 0 {
 		response.ExpenseProgress = (d.ActualExpense / d.ExpenseLimit) * 100
-	}
-	if d.SavingsTarget > 0 {
-		response.SavingsProgress = (d.ActualSavings / d.SavingsTarget) * 100
 	}
 
 	// Convert trading activities

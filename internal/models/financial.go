@@ -41,21 +41,20 @@ type DailyTarget struct {
 	ID                uint              `gorm:"primaryKey" json:"id"`
 	UserID            uuid.UUID         `gorm:"type:uuid;not null;index;uniqueIndex:idx_user_date" json:"user_id"`
 	Date              time.Time         `gorm:"type:date;not null;index;uniqueIndex:idx_user_date" json:"date"`
-	IncomeTarget      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"income_target"`  // Profit target
-	ExpenseLimit      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"expense_limit"`  // Max loss allowed
-	SavingsTarget     float64           `gorm:"type:decimal(15,2);not null;default:0" json:"savings_target"` // Optional savings goal
-	ActualIncome      float64           `gorm:"type:decimal(15,2);default:0" json:"actual_income"`           // Total profit achieved
-	ActualExpense     float64           `gorm:"type:decimal(15,2);default:0" json:"actual_expense"`          // Total loss incurred
-	ActualSavings     float64           `gorm:"type:decimal(15,2);default:0" json:"actual_savings"`          // Net profit (income - expense)
-	RemainingIncome   float64           `gorm:"type:decimal(15,2);default:0" json:"remaining_income"`        // Income left to achieve
-	RemainingExpense  float64           `gorm:"type:decimal(15,2);default:0" json:"remaining_expense"`       // Loss budget left
-	TotalTrades       int               `gorm:"default:0" json:"total_trades"`                               // Number of trades
-	WinningTrades     int               `gorm:"default:0" json:"winning_trades"`                             // Number of wins
-	LosingTrades      int               `gorm:"default:0" json:"losing_trades"`                              // Number of losses
-	WinRate           float64           `gorm:"type:decimal(5,2);default:0" json:"win_rate"`                 // Win rate percentage
-	IsCompleted       bool              `gorm:"default:false" json:"is_completed"`                           // Target reached?
-	CompletedAt       *time.Time        `gorm:"type:timestamp" json:"completed_at,omitempty"`                // When target was reached
-	Notes             string            `gorm:"type:text" json:"notes"`                                      // Trading plan notes
+	IncomeTarget      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"income_target"` // Profit target
+	ExpenseLimit      float64           `gorm:"type:decimal(15,2);not null;default:0" json:"expense_limit"` // Max loss allowed
+	ActualIncome      float64           `gorm:"type:decimal(15,2);default:0" json:"actual_income"`          // Total profit achieved
+	ActualExpense     float64           `gorm:"type:decimal(15,2);default:0" json:"actual_expense"`         // Total loss incurred
+	ActualSavings     float64           `gorm:"type:decimal(15,2);default:0" json:"actual_savings"`         // Net profit (income - expense)
+	RemainingIncome   float64           `gorm:"type:decimal(15,2);default:0" json:"remaining_income"`       // Income left to achieve
+	RemainingExpense  float64           `gorm:"type:decimal(15,2);default:0" json:"remaining_expense"`      // Loss budget left
+	TotalTrades       int               `gorm:"default:0" json:"total_trades"`                              // Number of trades
+	WinningTrades     int               `gorm:"default:0" json:"winning_trades"`                            // Number of wins
+	LosingTrades      int               `gorm:"default:0" json:"losing_trades"`                             // Number of losses
+	WinRate           float64           `gorm:"type:decimal(5,2);default:0" json:"win_rate"`                // Win rate percentage
+	IsCompleted       bool              `gorm:"default:false" json:"is_completed"`                          // Target reached?
+	CompletedAt       *time.Time        `gorm:"type:timestamp" json:"completed_at,omitempty"`               // When target was reached
+	Notes             string            `gorm:"type:text" json:"notes"`                                     // Trading plan notes
 	CreatedAt         time.Time         `json:"created_at"`
 	UpdatedAt         time.Time         `json:"updated_at"`
 	DeletedAt         gorm.DeletedAt    `gorm:"index" json:"deleted_at,omitempty"`
